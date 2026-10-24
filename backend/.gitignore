@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+myvenv/
+.venv/
+env/
+ENV/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# VS Code
+.vscode/
+.idea/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.sqlite3
+*.db
+
+# Alembic
+# DO NOT ignore alembic migrations
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+# User uploaded documents
+uploads/
