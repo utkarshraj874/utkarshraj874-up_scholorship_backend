@@ -14,6 +14,7 @@ class Profile(Base):
     department = Column(String, nullable=False)
     semester = Column(Integer, nullable=False)
     phone_no = Column(String, nullable=False)
+    aadhaar_no = Column(String(12), nullable=True)
     tenth_percentage = Column(Float, nullable=False)
     twelfth_percentage = Column(Float, nullable=False)
     family_income = Column(Float, nullable=False)

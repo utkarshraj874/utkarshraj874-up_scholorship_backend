@@ -4,6 +4,8 @@ from backend.app.models.profile import Profile
 from backend.app.models.documents import Document
 from backend.app.models.notification import Notification
 from backend.app.models.help_query import HelpQuery
+from backend.app.models.password_reset import PasswordReset
 
-__all__ = ["Base", "User", "Profile", "Document", "Notification", "HelpQuery"]
+__all__ = ["Base", "User", "Profile", "Document", "Notification", "HelpQuery", "PasswordReset"]
+
 

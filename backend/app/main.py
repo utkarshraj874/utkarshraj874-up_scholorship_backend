@@ -19,6 +19,7 @@ from backend.app.api.documents import router as documents_router
 from backend.app.api.admin import router as admin_router
 from backend.app.api.notifications import router as notifications_router
 from backend.app.api.help_desk import router as help_desk_router
+from backend.app.api.password_reset import router as password_reset_router
 
 
 @asynccontextmanager
@@ -71,6 +72,7 @@ app.include_router(documents_router)
 app.include_router(admin_router)
 app.include_router(notifications_router)
 app.include_router(help_desk_router)
+app.include_router(password_reset_router)
 
 
 @app.exception_handler(Exception)
