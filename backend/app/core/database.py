@@ -16,3 +16,9 @@ SessionLocal = sessionmaker(
 #A Session is the main way you interact with the database: you use it to query, insert, update, and delete rows.
 #By defining SessionLocal, you can easily create sessions later with SessionLocal()
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
