@@ -83,3 +83,10 @@ def verify_acess_token(token:str):
             detail="invalid token"
         )
         
+
+# Compatibility wrapper for existing imports expecting `get_password_hash`
+def get_password_hash(password: str) -> str:
+    """Return a hashed password using the configured CryptContext.
+    This function mirrors the older name used in other modules.
+    """
+    return hash_password(password)
