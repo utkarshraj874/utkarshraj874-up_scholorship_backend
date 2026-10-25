@@ -124,10 +124,14 @@ def create_file_url(
     except Exception:
         pass
 
-    # If local file exists, serve from local API endpoint
+    # If local file exists, serve from configured backend API endpoint
     local_target = UPLOAD_DIR / storage_path
     if local_target.exists():
-        return f"http://localhost:8000/uploads/{storage_path}"
+        backend_base = os.getenv(
+            "BACKEND_URL",
+            "https://utkarshraj874-up-scholorship-backend.onrender.com",
+        ).rstrip("/")
+        return f"{backend_base}/uploads/{storage_path}"
 
     return None
 

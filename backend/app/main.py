@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -24,16 +25,24 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for local React development and external access
+# Enable CORS for local React development, Vercel frontend, and external access
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+extra_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://upscholorshipfrontend.vercel.app",
+]
+
+all_allowed_origins = list(dict.fromkeys(default_origins + extra_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-    ],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origins=all_allowed_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^https://.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
