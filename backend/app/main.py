@@ -1,16 +1,17 @@
 import os
 import sys
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 # Ensure project root is in sys.path so 'backend.app' works from any working directory
 _project_root = Path(__file__).resolve().parent.parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from backend.app.api.user import router as user_router
 from backend.app.api.profile import router as profile_router
@@ -19,10 +20,25 @@ from backend.app.api.admin import router as admin_router
 from backend.app.api.notifications import router as notifications_router
 from backend.app.api.help_desk import router as help_desk_router
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-create tables on startup if database is configured
+    try:
+        from backend.app.models import Base
+        from backend.app.core.database import engine
+        Base.metadata.create_all(bind=engine)
+        print("Database tables initialized successfully.")
+    except Exception as e:
+        print(f"Warning: database table initialization error on startup: {e}")
+    yield
+
+
 app = FastAPI(
     title="UP Scholarship Portal - IIIT Ranchi",
     description="Backend API for UP Scholarship (IIIT Ranchi)",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Enable CORS for local React development, Vercel frontend, and external access
@@ -55,6 +71,51 @@ app.include_router(documents_router)
 app.include_router(admin_router)
 app.include_router(notifications_router)
 app.include_router(help_desk_router)
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    import traceback
+    traceback.print_exc()
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Headers"] = "*"
+        headers["Access-Control-Allow-Methods"] = "*"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Database / Server error: {str(exc)}"},
+        headers=headers,
+    )
+
+
+@app.get("/health")
+def health_check():
+    info = {"status": "ok", "portal": "UP Scholarship Copilot - IIIT Ranchi"}
+    try:
+        from backend.app.core.config import DATABASE_URL
+        from backend.app.core.database import engine
+        from sqlalchemy import text, inspect
+        import re
+
+        if not DATABASE_URL:
+            info["database_status"] = "DATABASE_URL is not set in environment"
+        else:
+            masked = re.sub(r"://([^:]+):([^@]+)@", r"://\1:****@", DATABASE_URL)
+            info["database_url"] = masked
+
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+                info["database_status"] = "connected"
+                inspector = inspect(engine)
+                info["tables"] = inspector.get_table_names()
+    except Exception as e:
+        info["database_status"] = "error"
+        info["database_error"] = str(e)
+    return info
+
 
 
 
