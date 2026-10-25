@@ -41,7 +41,7 @@ Thumbs.db
 # Alembic
 # DO NOT ignore alembic migrations
 
-# Node / Frontend
+# Node / Frontend (separate repo)
 node_modules/
-frontend/node_modules/
-frontend/dist/
+frontend/
+
