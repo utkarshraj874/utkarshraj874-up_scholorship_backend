@@ -8,6 +8,8 @@ myvenv/
 env/
 ENV/
 
+# Frontend is maintained in a separate repository
+/frontend/
 # Environment variables / secrets
 .env
 .env.*

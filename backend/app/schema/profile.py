@@ -12,6 +12,7 @@ class ProfileBase(BaseModel):
     twelfth_percentage: float
     family_income: float
     semester_result: float | None = None
+    aadhaar_no: str | None = None
 
     @validator('phone_no')
     def validate_phone_no(cls, v):
