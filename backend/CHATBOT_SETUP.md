@@ -38,6 +38,12 @@ Set these environment variables for the backend service:
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` — required to deliver password-reset codes.
 - `SMTP_TLS` — optional; defaults to `true`.
 
+Set `GROQ_API_KEY` in the **Render backend service** environment, not in the
+Vercel project. After saving the value, redeploy/restart the backend. The
+backend's `/health` response reports `chatbot_status` as either
+`configured` or `missing_groq_api_key` without returning the secret. It also
+reports whether `profiles.aadhaar_no` is present as `profile_schema_status`.
+
 With the frontend and backend in this repository, configure Render with the repository root as its Root Directory and use:
 
 ```sh

@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime
 from typing import Annotated, Any, TypedDict
 
@@ -10,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from backend.app.core.config import GROQ_API_KEY, GROQ_MODEL
 from backend.app.core.dependencies import get_current_user, get_db
 from backend.app.models.chat import ChatConversation, ChatMessage
 from backend.app.models.user import User
@@ -135,11 +135,14 @@ async def stream_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
+    if not GROQ_API_KEY:
         raise HTTPException(
             status_code=503,
-            detail="The scholarship assistant is not configured yet.",
+            detail=(
+                "The scholarship assistant is unavailable because GROQ_API_KEY "
+                "is not set on the backend. Add it to the Render backend service "
+                "environment (not Vercel) and redeploy."
+            ),
         )
 
     content = req.content.strip()
@@ -181,8 +184,7 @@ async def stream_message(
     class GraphState(TypedDict):
         messages: Annotated[list[Any], add_messages]
 
-    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-    model = ChatGroq(model=model_name, api_key=api_key, temperature=0.2)
+    model = ChatGroq(model=GROQ_MODEL, api_key=GROQ_API_KEY, temperature=0.2)
     prompt_messages: list[Any] = [
         SystemMessage(
             content=(

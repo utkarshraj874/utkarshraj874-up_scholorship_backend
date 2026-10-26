@@ -92,6 +92,10 @@ async def generic_exception_handler(request: Request, exc: Exception):
 @app.get("/health")
 def health_check():
     info = {"status": "ok", "portal": "UP Scholarship Copilot - IIIT Ranchi"}
+    from backend.app.core.config import GROQ_API_KEY
+
+    info["chatbot_status"] = "configured" if GROQ_API_KEY else "missing_groq_api_key"
+
     try:
         from backend.app.core.config import DATABASE_URL
         from backend.app.core.database import engine
@@ -109,6 +113,15 @@ def health_check():
                 info["database_status"] = "connected"
                 inspector = inspect(engine)
                 info["tables"] = inspector.get_table_names()
+                if "profiles" in info["tables"]:
+                    profile_columns = {
+                        column["name"] for column in inspector.get_columns("profiles")
+                    }
+                    info["profile_schema_status"] = (
+                        "ready" if "aadhaar_no" in profile_columns else "missing_aadhaar_no"
+                    )
+                else:
+                    info["profile_schema_status"] = "missing_profiles_table"
     except Exception as e:
         info["database_status"] = "error"
         info["database_error"] = str(e)
