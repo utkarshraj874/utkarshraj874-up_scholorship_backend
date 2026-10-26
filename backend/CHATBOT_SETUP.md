@@ -33,7 +33,7 @@ Set these environment variables for the backend service:
 - `SECRET_KEY` — a long, random secret used for authentication and reset-code hashing; replace any development default.
 - `ADMIN_REGISTRATION_KEY` — a long, private key required to create admin accounts. Configure it only on the backend (Render environment and local `backend/.env`); never add it to Vercel or frontend variables.
 - `GROQ_API_KEY` — API key from Groq.
-- `GROQ_MODEL` — optional; defaults to `llama-3.3-70b-versatile`.
+- `GROQ_MODEL` — optional; defaults to `openai/gpt-oss-120b`. If this is set in Render, use a model ID currently enabled for your Groq account.
 - `BACKEND_URL` — optional public API base URL used for locally stored file links; defaults to Render's `RENDER_EXTERNAL_URL` or `http://localhost:8000`.
 - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_BUCKET` — configure persistent document storage. The bucket defaults to `documents`.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` — required to deliver password-reset codes.
@@ -43,7 +43,10 @@ Set `GROQ_API_KEY` in the **Render backend service** environment, not in the
 Vercel project. After saving the value, redeploy/restart the backend. The
 backend's `/health` response reports `chatbot_status` as either
 `configured` or `missing_groq_api_key` without returning the secret. It also
-reports whether `profiles.aadhaar_no` is present as `profile_schema_status`.
+reports the selected model as `chatbot_model` and whether the profiles table
+is present as `profile_schema_status`. Groq retired `llama-3.3-70b-versatile`
+for free and developer-tier usage on August 16, 2026; use a currently supported
+model such as `openai/gpt-oss-120b`.
 
 With the frontend and backend in this repository, configure Render with the repository root as its Root Directory and use:
 
