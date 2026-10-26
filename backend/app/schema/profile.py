@@ -12,7 +12,6 @@ class ProfileBase(BaseModel):
     twelfth_percentage: float
     family_income: float
     semester_result: float | None = None
-    aadhaar_no: str | None = None
 
     @field_validator('phone_no')
     @classmethod
@@ -26,15 +25,6 @@ class ProfileBase(BaseModel):
     def validate_registration_no(cls, v):
         if not re.fullmatch(r"[0-9]{4}UG[0-9]{4}", v):
             raise ValueError('Registration number must follow format 2024UG1035')
-        return v
-
-    @field_validator('aadhaar_no')
-    @classmethod
-    def validate_aadhaar_no(cls, v):
-        if v is None or v == '':
-            return v
-        if not re.fullmatch(r"[0-9]{12}", v):
-            raise ValueError('Aadhaar number must be exactly 12 digits')
         return v
 
 class ProfileCreate(ProfileBase):

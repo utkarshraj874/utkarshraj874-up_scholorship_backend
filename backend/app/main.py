@@ -113,15 +113,9 @@ def health_check():
                 info["database_status"] = "connected"
                 inspector = inspect(engine)
                 info["tables"] = inspector.get_table_names()
-                if "profiles" in info["tables"]:
-                    profile_columns = {
-                        column["name"] for column in inspector.get_columns("profiles")
-                    }
-                    info["profile_schema_status"] = (
-                        "ready" if "aadhaar_no" in profile_columns else "missing_aadhaar_no"
-                    )
-                else:
-                    info["profile_schema_status"] = "missing_profiles_table"
+                info["profile_schema_status"] = (
+                    "ready" if "profiles" in info["tables"] else "missing_profiles_table"
+                )
     except Exception as e:
         info["database_status"] = "error"
         info["database_error"] = str(e)
