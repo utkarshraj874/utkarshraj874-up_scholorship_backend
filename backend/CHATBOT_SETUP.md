@@ -53,6 +53,14 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
 
 Alembic reads `DATABASE_URL` from the environment. Run the migration as a pre-deploy step so existing databases receive the new columns before the updated API starts.
 
+For a local checkout of this repository on Windows, apply pending migrations from the repository root with:
+
+```powershell
+backend\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini upgrade head
+```
+
+The latest migration also repairs an existing `profiles` table if it is missing the optional `aadhaar_no` column.
+
 The chatbot stores each conversation and its messages in the database, scoped to the authenticated user. The assistant receives a maximum of 20 recent stored messages plus the current prompt. Message content is limited to 4,000 characters.
 
 ## Chat API

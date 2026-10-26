@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -21,6 +22,8 @@ from backend.app.api.notifications import router as notifications_router
 from backend.app.api.help_desk import router as help_desk_router
 from backend.app.api.password_reset import router as password_reset_router
 from backend.app.api.chat import router as chat_router
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -79,19 +82,10 @@ app.include_router(chat_router)
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    import traceback
-    traceback.print_exc()
-    origin = request.headers.get("origin")
-    headers = {}
-    if origin:
-        headers["Access-Control-Allow-Origin"] = origin
-        headers["Access-Control-Allow-Credentials"] = "true"
-        headers["Access-Control-Allow-Headers"] = "*"
-        headers["Access-Control-Allow-Methods"] = "*"
+    logger.exception("Unhandled request error", exc_info=exc)
     return JSONResponse(
         status_code=500,
-        content={"detail": f"Database / Server error: {str(exc)}"},
-        headers=headers,
+        content={"detail": "An unexpected server error occurred."},
     )
 
 
