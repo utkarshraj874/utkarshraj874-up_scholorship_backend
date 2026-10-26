@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-# importing a class from passlib libray 
+# importing a class from passlib libray
 # cryptcontext knows  how to hash password , how to verify passwords
 from jose import jwt
 from datetime import datetime
@@ -23,12 +23,12 @@ oauth2_scheme_optional = OAuth2PasswordBearer(
 
 pwd_context = CryptContext(
     schemes = ["argon2"],
-    deprecated = "auto"# if we later changes scheme = ["bcrypt"] old argon can still be verified ,AND passlib can indicat they should be rhashed 
+    deprecated = "auto"# if we later changes scheme = ["bcrypt"] old argon can still be verified ,AND passlib can indicat they should be rhashed
 )
 
 
 def hash_password(password:str)->str:
-    return pwd_context.hash(password)#hashes the password 
+    return pwd_context.hash(password)#hashes the password
 
 def verify_password(
         plain_password: str,
@@ -49,7 +49,7 @@ def create_acess_token(data:dict):
      to_encode.update(
          {"exp":expire}
          )
-     
+
      encoded_jwt = jwt.encode(
          to_encode,
          SECRET_KEY,
@@ -59,7 +59,6 @@ def create_acess_token(data:dict):
      return encoded_jwt
 
 def verify_acess_token(token:str):
-    print("token ka vale", token)
     try:
         payload = jwt.decode(
             token,
@@ -75,14 +74,14 @@ def verify_acess_token(token:str):
             status_code = 401,
             detail="token has expired"
         )
-    
+
     except JWTError:
 
         raise HTTPException(
             status_code=401,
             detail="invalid token"
         )
-        
+
 
 # Compatibility wrapper for existing imports expecting `get_password_hash`
 def get_password_hash(password: str) -> str:

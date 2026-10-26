@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # IIIT Ranchi - UP Scholarship Facilitation Portal
 
 Portal designed by the **Scholarship Coordinator of IIIT Ranchi** to assist peers and juniors in form fill-up, managing academic records, and uploading the 9 mandatory UP Scholarship documents.
@@ -47,27 +46,34 @@ Portal designed by the **Scholarship Coordinator of IIIT Ranchi** to assist peer
 
 ## 🛠️ How to Run the Project
 
+### Local setup from the repository root
+
+Use the project virtual environment explicitly so `uvicorn` runs with the backend dependencies:
+
+```powershell
+py -3.12 -m venv backend\.venv
+backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+if (!(Test-Path backend\.env)) { Copy-Item backend\.env.example backend\.env }
+backend\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
+```
+
+Set `DATABASE_URL` in `backend\.env` to a PostgreSQL database you intend to use. Supabase storage variables are optional locally; without them (or the Supabase package), files are stored under `backend\uploads`. See [CHATBOT_SETUP.md](./CHATBOT_SETUP.md) for local frontend setup and Render deployment configuration.
+
 ### Option A: Run Backend + Built Frontend on Port 8000 (Fastest)
 
-#### From Root Directory (`scholorship_ai`):
-1. Activate virtual environment:
-   ```bash
-   .\myvenv\Scripts\activate
-   ```
-2. Start the FastAPI server:
-   ```bash
-   uvicorn backend.app.main:app --reload
-   ```
+#### From the repository root:
+
+Use the virtual-environment command from the local setup section above.
 
 #### Or From `backend` Directory:
-1. Activate virtual environment:
+1. From the backend folder, install the dependencies and activate its virtual environment:
    ```bash
+   python -m pip install -r requirements.txt
    .\.venv\Scripts\activate
-   # (or: ..\myvenv\Scripts\activate)
    ```
-2. Start the FastAPI server:
+2. Start the FastAPI server with the same Python environment:
    ```bash
-   uvicorn app.main:app --reload
+   python -m uvicorn app.main:app --reload
    ```
 
 3. Open your browser:
@@ -80,17 +86,10 @@ Portal designed by the **Scholarship Coordinator of IIIT Ranchi** to assist peer
 
 1. In Terminal 1 (Backend):
    ```bash
-   cd backend
-   .\.venv\Scripts\activate
-   uvicorn app.main:app --reload
+   .\backend\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
    ```
 2. In Terminal 2 (Frontend):
    ```bash
-   cd frontend
-   npm run dev
+   npm --prefix frontend run dev
    ```
 3. Open [http://localhost:5173](http://localhost:5173).
-
-=======
-# up_scholorship_backend
->>>>>>> 8689cbb8972bd2034b6cb052001baa33a1166233

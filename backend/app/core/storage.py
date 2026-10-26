@@ -1,13 +1,16 @@
 import os
+import logging
 from pathlib import Path
+from typing import Any
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
+
 try:
-    from supabase import create_client, Client
+    from supabase import create_client
 except ImportError:
-    # Supabase client is optional; define dummy types
     create_client = None
-    Client = None
-    print("Warning: supabase-py not installed. Storage will use only local fallback.")
+    logger.warning("supabase-py is not installed; using local file storage")
 
 env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 if env_path.exists():
@@ -18,17 +21,22 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "documents")
 
 
+supabase: Any | None = None
 if SUPABASE_URL and SUPABASE_SERVICE_KEY:
-    if not SUPABASE_URL:
-        raise ValueError("SUPABASE_URL is not configured")
-    if not SUPABASE_SERVICE_KEY:
-        raise ValueError("SUPABASE_SERVICE_KEY is not configured")
-    supabase: Client = create_client(
-        SUPABASE_URL,
-        SUPABASE_SERVICE_KEY
+    if create_client is None:
+        logger.warning(
+            "Supabase credentials are set but supabase-py is unavailable; "
+            "using local file storage"
+        )
+    else:
+        supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+elif SUPABASE_URL or SUPABASE_SERVICE_KEY:
+    logger.warning(
+        "Supabase storage is not configured: set both SUPABASE_URL and "
+        "SUPABASE_SERVICE_KEY"
     )
 else:
-    supabase = None
+    logger.info("Supabase storage credentials are not configured; using local file storage")
 
 
 UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
@@ -51,22 +59,19 @@ def upload_file(
     # Attempt upload to Supabase if client is available
     if supabase is not None:
         try:
-            return (
-                supabase.storage
-                .from_(SUPABASE_BUCKET)
-                .upload(
-                    path=storage_path,
-                    file=file_content,
-                    file_options={
-                        "content-type": content_type,
-                        "upsert": "true",
-                    },
-                )
+            supabase.storage.from_(SUPABASE_BUCKET).upload(
+                path=storage_path,
+                file=file_content,
+                file_options={
+                    "content-type": content_type,
+                    "upsert": "true",
+                },
             )
+            return {"path": storage_path, "provider": "supabase"}
         except Exception as e:
             print(f"Warning: Supabase upload error ({str(e)}). Using local file fallback.")
     # Fallback when supabase unavailable or upload failed
-    return {"path": storage_path, "local": True}
+    return {"path": storage_path, "provider": "local"}
 
 
 def delete_file(storage_path: str):
@@ -98,40 +103,38 @@ def create_file_url(
     storage_path: str,
     expires_in: int = 3600,
 ):
-    try:
-        res = (
-            supabase.storage
-            .from_(SUPABASE_BUCKET)
-            .create_signed_url(
-                storage_path,
-                expires_in,
+    if supabase is not None:
+        try:
+            res = (
+                supabase.storage
+                .from_(SUPABASE_BUCKET)
+                .create_signed_url(
+                    storage_path,
+                    expires_in,
+                )
             )
-        )
-        if isinstance(res, dict):
-            url = res.get("signedURL") or res.get("signedUrl")
-            if url:
-                return url
-        if res and not str(res).startswith("{"):
-            return str(res)
-    except Exception as e:
-        print("Supabase signed URL error:", str(e))
+            if isinstance(res, dict):
+                url = res.get("signedURL") or res.get("signedUrl")
+                if url:
+                    return url
+            if res and not str(res).startswith("{"):
+                return str(res)
+        except Exception:
+            logger.exception("Could not create a signed Supabase file URL")
 
-    # Fallback to public URL or local mounted static URL
-    try:
-        pub = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(storage_path)
-        if pub:
-            return pub
-    except Exception:
-        pass
+        try:
+            pub = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(storage_path)
+            if pub:
+                return pub
+        except Exception:
+            logger.exception("Could not create a public Supabase file URL")
 
-    # If local file exists, serve from configured backend API endpoint
     local_target = UPLOAD_DIR / storage_path
     if local_target.exists():
         backend_base = os.getenv(
             "BACKEND_URL",
-            "https://utkarshraj874-up-scholorship-backend.onrender.com",
+            os.getenv("RENDER_EXTERNAL_URL", "http://localhost:8000"),
         ).rstrip("/")
         return f"{backend_base}/uploads/{storage_path}"
 
     return None
-

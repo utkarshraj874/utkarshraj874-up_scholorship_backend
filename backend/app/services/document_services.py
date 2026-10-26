@@ -1,7 +1,7 @@
 import uuid
-#used to generate unique id 
+#used to generate unique id
 from pathlib import Path
-#helps work with file name and extension 
+#helps work with file name and extension
 
 from fastapi import UploadFile
 #represents an uploaded file in FastAPI
@@ -100,7 +100,7 @@ async def create_document(
     )
 
     # Upload to Supabase
-    upload_file(
+    upload_result = upload_file(
         file_content=file_content,
         storage_path=storage_path,
         content_type=file.content_type,
@@ -114,7 +114,7 @@ async def create_document(
             file_type=file.content_type,
             file_size=len(file_content),
             file_path=storage_path,
-            storage_provider="supabase",
+            storage_provider=upload_result["provider"],
             **details,
         )
 
@@ -180,7 +180,7 @@ def get_document_url(
     )
 
    #here we have calling the update_document function which is callled before definng , this works in python bcz .
-   #when file is executed python interpreter reads the whole file and then executes the code, 
+   #when file is executed python interpreter reads the whole file and then executes the code,
    # so it can find the function definition even if it is defined after the call.
 async def update_document(
     db: Session,
@@ -234,7 +234,7 @@ async def update_document(
                 file.filename,
             )
 
-            upload_file(
+            upload_result = upload_file(
                 file_content=file_content,
                 storage_path=new_file_path,
                 content_type=file.content_type,
@@ -244,6 +244,7 @@ async def update_document(
             document.file_type = file.content_type
             document.file_size = len(file_content)
             document.file_path = new_file_path
+            document.storage_provider = upload_result["provider"]
 
         # Update details
         for key, value in details.items():
