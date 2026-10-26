@@ -1,3 +1,5 @@
+import hmac
+
 from fastapi import APIRouter
 from fastapi import Depends
 
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from backend.app.schema.user import Usercreate, UserResponse
+from backend.app.core.config import ADMIN_REGISTRATION_KEY
 
 from backend.app.models.user import User
 
@@ -27,6 +30,18 @@ async def register(
     # aur jo return/yield kare
     # wo db me daal do
 ):
+    if user.role == "admin":
+        if not ADMIN_REGISTRATION_KEY:
+            raise HTTPException(
+                status_code=503,
+                detail="Admin registration is not configured. Contact the system administrator.",
+            )
+        if not user.admin_passkey or not hmac.compare_digest(
+            user.admin_passkey,
+            ADMIN_REGISTRATION_KEY,
+        ):
+            raise HTTPException(status_code=403, detail="Invalid admin registration key")
+
     # ✅ Email validation
     try:
         validate_email(user.email)  # throws EmailNotValidError if invalid
@@ -129,7 +144,6 @@ async def read_me(
         "email": current_user.email,
         "role": current_user.role,
     }
-
 
 
 

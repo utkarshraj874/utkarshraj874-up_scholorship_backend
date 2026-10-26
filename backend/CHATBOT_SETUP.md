@@ -31,6 +31,7 @@ Set these environment variables for the backend service:
 
 - `DATABASE_URL` — Render PostgreSQL connection URL used by both the API and Alembic migrations.
 - `SECRET_KEY` — a long, random secret used for authentication and reset-code hashing; replace any development default.
+- `ADMIN_REGISTRATION_KEY` — a long, private key required to create admin accounts. Configure it only on the backend (Render environment and local `backend/.env`); never add it to Vercel or frontend variables.
 - `GROQ_API_KEY` — API key from Groq.
 - `GROQ_MODEL` — optional; defaults to `llama-3.3-70b-versatile`.
 - `BACKEND_URL` — optional public API base URL used for locally stored file links; defaults to Render's `RENDER_EXTERNAL_URL` or `http://localhost:8000`.
