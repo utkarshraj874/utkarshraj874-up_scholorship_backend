@@ -6,6 +6,7 @@ REQUIRED_DOCUMENTS = [
     "category_certificate",
     "domicile_certificate",
     "bank_passbook",
-    "ration_card",
+    "gap_certificate",
+    "last_semester_result",
     "profile_photo",
 ]

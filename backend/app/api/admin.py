@@ -51,12 +51,14 @@ def get_all_students(
     List all students along with their profile summary and document counts.
     """
     query = db.query(User).filter(User.role == "student")
+
+    # if search is clicked below code will excute and filter the students based on name or email
     if search:
         s = f"%{search.strip()}%"
         query = query.filter(
             (User.name.ilike(s)) | (User.email.ilike(s))
         )
-
+    
     students = query.order_by(User.id.desc()).all()
 
     result = []

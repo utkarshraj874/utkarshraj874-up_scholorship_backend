@@ -20,3 +20,4 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b").strip()
 ADMIN_REGISTRATION_KEY = os.getenv("ADMIN_REGISTRATION_KEY", "").strip()
 
 print("CONFIG LOADED:", "DATABASE_URL is set" if DATABASE_URL else "DATABASE_URL is None")
+

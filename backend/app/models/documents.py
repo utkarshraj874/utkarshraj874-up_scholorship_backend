@@ -100,6 +100,11 @@ class Document(Base):
         nullable=True
     )
 
+    tenth_cgpa: Mapped[float | None] = mapped_column(
+        Numeric(4, 2),
+        nullable=True
+    )
+
     # =========================================================
     # 12th MARKSHEET
     # =========================================================
@@ -120,6 +125,11 @@ class Document(Base):
 
     twelfth_percentage: Mapped[float | None] = mapped_column(
         Numeric(5, 2),
+        nullable=True
+    )
+
+    twelfth_cgpa: Mapped[float | None] = mapped_column(
+        Numeric(4, 2),
         nullable=True
     )
 

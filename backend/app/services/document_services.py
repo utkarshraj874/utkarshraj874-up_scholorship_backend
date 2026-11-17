@@ -1,7 +1,7 @@
 import uuid
-#used to generate unique id
+#used to generate unique id 
 from pathlib import Path
-#helps work with file name and extension
+#helps work with file name and extension 
 
 from fastapi import UploadFile
 #represents an uploaded file in FastAPI
@@ -180,7 +180,7 @@ def get_document_url(
     )
 
    #here we have calling the update_document function which is callled before definng , this works in python bcz .
-   #when file is executed python interpreter reads the whole file and then executes the code,
+   #when file is executed python interpreter reads the whole file and then executes the code, 
    # so it can find the function definition even if it is defined after the call.
 async def update_document(
     db: Session,

@@ -6,7 +6,8 @@ ALLOWED_CATEGORIES = {
     "category_certificate",
     "domicile_certificate",
     "bank_passbook",
-    "ration_card",
+    "gap_certificate",
+    "last_semester_result",
     "profile_photo",
 }
 
@@ -30,20 +31,20 @@ def validate_document_details(category: str, data: dict):
             "tenth_roll_number",
             "tenth_board",
             "tenth_passing_year",
-            "tenth_percentage",
         ]
 
         check_required_fields(data, required_fields)
+        validate_education_score(data, "tenth")
 
     elif category == "twelfth_marksheet":
         required_fields = [
             "twelfth_roll_number",
             "twelfth_board",
             "twelfth_passing_year",
-            "twelfth_percentage",
         ]
 
         check_required_fields(data, required_fields)
+        validate_education_score(data, "twelfth")
 
     elif category == "income_certificate":
         required_fields = [
@@ -82,14 +83,26 @@ def validate_document_details(category: str, data: dict):
 
         check_required_fields(data, required_fields)
 
-    elif category == "ration_card":
-        if not data.get("ration_card_number"):
-            raise ValueError("Ration card number is required")
-
-
 def check_required_fields(data: dict, fields: list):
     for field in fields:
         value = data.get(field)
 
         if value is None or value == "":
             raise ValueError(f"{field} is required")
+
+
+def validate_education_score(data: dict, prefix: str):
+    percentage = data.get(f"{prefix}_percentage")
+    cgpa = data.get(f"{prefix}_cgpa")
+    board = (data.get(f"{prefix}_board") or "").strip().upper()
+    has_percentage = percentage is not None and percentage != ""
+    has_cgpa = cgpa is not None and cgpa != ""
+
+    if board == "CBSE":
+        if has_percentage == has_cgpa:
+            raise ValueError(f"Provide either {prefix} percentage or CGPA for CBSE")
+    else:
+        if not has_percentage:
+            raise ValueError(f"{prefix} percentage is required for this board")
+        if has_cgpa:
+            raise ValueError("CGPA entry is available only for CBSE")
