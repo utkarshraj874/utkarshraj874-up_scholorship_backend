@@ -6,6 +6,7 @@ from fastapi import (
     HTTPException,
     UploadFile,
 )
+import logging
 from sqlalchemy.orm import Session
 
 from backend.app.core.dependencies import get_db, get_current_user_optional
@@ -28,6 +29,7 @@ router = APIRouter(
     prefix="/documents",
     tags=["Documents"],
 )
+logger = logging.getLogger(__name__)
 
 
 def resolve_user_id(user_id: int | None, current_user: User | None) -> int:
@@ -87,10 +89,11 @@ async def upload_document(
             detail=str(e),
         )
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to upload document")
         raise HTTPException(
             status_code=500,
-            detail=str(e),
+            detail="Unable to upload the document right now. Please try again later.",
         )
 
 
@@ -221,10 +224,11 @@ async def update_document_api(
             detail=str(e),
         )
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to update document")
         raise HTTPException(
             status_code=500,
-            detail=str(e),
+            detail="Unable to update the document right now. Please try again later.",
         )
 
 
@@ -259,8 +263,9 @@ def remove_document(
             detail=str(e),
         )
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to delete document")
         raise HTTPException(
             status_code=500,
-            detail=str(e),
+            detail="Unable to delete the document right now. Please try again later.",
         )

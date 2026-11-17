@@ -10,6 +10,10 @@ from backend.app.models import Base
 
 def run_migration():
     print("Running database migration...")
+    # Create missing tables first; create_all does not change existing tables,
+    # so the idempotent ALTER statements below handle columns on old schemas.
+    Base.metadata.create_all(bind=engine)
+
     with engine.connect() as conn:
         # Add role column to users if not exists
         conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(30) NOT NULL DEFAULT 'student';"))
@@ -17,12 +21,12 @@ def run_migration():
         # Add admin_remarks and verified_at to documents if not exists
         conn.execute(text("ALTER TABLE documents ADD COLUMN IF NOT EXISTS admin_remarks TEXT;"))
         conn.execute(text("ALTER TABLE documents ADD COLUMN IF NOT EXISTS verified_at TIMESTAMP;"))
+        conn.execute(text("ALTER TABLE documents ADD COLUMN IF NOT EXISTS tenth_cgpa NUMERIC(4, 2);"))
+        conn.execute(text("ALTER TABLE documents ADD COLUMN IF NOT EXISTS twelfth_cgpa NUMERIC(4, 2);"))
         conn.commit()
         print("Updated existing tables: users, documents")
 
-    # Create new tables: notifications, help_queries
-    Base.metadata.create_all(bind=engine)
-    print("Created any missing tables successfully!")
+    print("Schema changes applied successfully!")
 
 if __name__ == "__main__":
     run_migration()

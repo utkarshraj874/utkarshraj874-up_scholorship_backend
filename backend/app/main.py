@@ -30,10 +30,9 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Auto-create tables on startup if database is configured
     try:
-        from backend.app.models import Base
-        from backend.app.core.database import engine
-        Base.metadata.create_all(bind=engine)
-        print("Database tables initialized successfully.")
+        from backend.app.db.migrate_schema import run_migration
+        run_migration()
+        print("Database tables and schema initialized successfully.")
     except Exception as e:
         print(f"Warning: database table initialization error on startup: {e}")
     yield
