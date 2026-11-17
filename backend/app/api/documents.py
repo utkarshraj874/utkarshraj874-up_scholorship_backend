@@ -55,7 +55,7 @@ async def upload_document(
     user_id: int | None = Form(None),
     category: str = Form(...),
     details: str = Form("{}"),
-    file: UploadFile = File(...),
+    file: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):

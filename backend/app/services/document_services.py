@@ -46,13 +46,54 @@ async def create_document(
     user_id: int,
     category: str,
     details: dict,
-    file: UploadFile,
+    file: UploadFile | None,
 ):
     # Validate document details
     validate_document_details(
         category,
         details,
     )
+
+    existing_document = (
+        db.query(Document)
+        .filter(
+            Document.user_id == user_id,
+            Document.category == category,
+        )
+        .first()
+    )
+
+    if file is None:
+        if category not in {"tenth_marksheet", "twelfth_marksheet"}:
+            raise ValueError("A file is required for this document")
+
+        if existing_document:
+            return await update_document(
+                db=db,
+                user_id=user_id,
+                category=category,
+                details=details,
+            )
+
+        try:
+            document = Document(
+                user_id=user_id,
+                category=category,
+                file_name="",
+                file_type="",
+                file_size=0,
+                file_path="",
+                storage_provider="",
+                status="draft",
+                **details,
+            )
+            db.add(document)
+            db.commit()
+            db.refresh(document)
+            return document
+        except Exception:
+            db.rollback()
+            raise
 
     # Validate file type
     if file.content_type not in ALLOWED_FILE_TYPES:
@@ -71,16 +112,6 @@ async def create_document(
         raise ValueError(
             "File size must be less than 5 MB"
         )
-
-    # Check existing document
-    existing_document = (
-        db.query(Document)
-        .filter(
-            Document.user_id == user_id,
-            Document.category == category,
-        )
-        .first()
-    )
 
     if existing_document:
         await file.seek(0)
@@ -172,7 +203,7 @@ def get_document_url(
         category,
     )
 
-    if not document:
+    if not document or not document.file_path:
         return None
 
     return create_file_url(
@@ -251,14 +282,14 @@ async def update_document(
             setattr(document, key, value)
 
         # Reset status back to submitted when new file or updated details are provided
-        document.status = "submitted"
+        document.status = "submitted" if document.file_path else "draft"
 
         db.commit()
         db.refresh(document)
 
 
         # Delete old file after DB update
-        if new_file_path:
+        if new_file_path and old_file_path:
             delete_file(old_file_path)
 
         return document
@@ -296,6 +327,7 @@ def delete_document(
     db.commit()
 
     # Delete file from Supabase
-    delete_file(file_path)
+    if file_path:
+        delete_file(file_path)
 
     return True

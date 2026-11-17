@@ -27,7 +27,7 @@ def get_dashboard_stats(
     Get summary statistics for the scholarship coordinator dashboard.
     """
     total_students = db.query(User).filter(User.role == "student").count()
-    total_documents = db.query(Document).count()
+    total_documents = db.query(Document).filter(Document.file_path != "").count()
     verified_documents = db.query(Document).filter(Document.status == "verified").count()
     correction_required = db.query(Document).filter(Document.status == "correction_required").count()
     open_queries = db.query(HelpQuery).filter(HelpQuery.status == "open").count()
@@ -64,7 +64,11 @@ def get_all_students(
     result = []
     for s in students:
         profile = db.query(Profile).filter(Profile.user_id == s.id).first()
-        docs = db.query(Document).filter(Document.user_id == s.id).all()
+        docs = (
+            db.query(Document)
+            .filter(Document.user_id == s.id, Document.file_path != "")
+            .all()
+        )
 
         uploaded_count = len(docs)
         verified_count = sum(1 for d in docs if d.status == "verified")
@@ -107,7 +111,11 @@ def get_student_documents(
         raise HTTPException(status_code=404, detail="Student not found")
 
     profile = db.query(Profile).filter(Profile.user_id == student_id).first()
-    docs = db.query(Document).filter(Document.user_id == student_id).all()
+    docs = (
+        db.query(Document)
+        .filter(Document.user_id == student_id, Document.file_path != "")
+        .all()
+    )
 
     documents_with_urls = []
     for d in docs:
